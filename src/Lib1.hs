@@ -6,8 +6,7 @@
 {-# OPTIONS_GHC -Wno-missing-fields #-}
 {-# LANGUAGE InstanceSigs #-}
 module Lib1(
-    State, emptyState, gameStart, render, mkCheck, toggle, hint
-    State(..), Square(..), emptyState, gameStart, render, mkCheck, toggle, hint,
+    State(..), Square(..), emptyState, gameStart, render, mkCheck, toggle, hint
 ) where
 
 import Prelude
@@ -16,20 +15,11 @@ import Types
       Document(DInteger, DList, DNull, DMap),
       Coord(Coord) )
 
--- This is a state of your game.
--- It must contain all values you might need during a game:
--- number of occupied rows/cols, hints, occupied cells,..
--- You can change the right hand side as you wish but please
--- keep the type name as is
-data State = State [String]
-    deriving Show
 -- Gets DMap value -> [(String, Document)]
 loadDMap :: Document -> [(String, Document)]
 loadDMap (DMap xs) = xs
 loadDMap _ = []
 
--- IMPLEMENT
--- This is very initial state of your program
 -- Gets DList value -> [Document]
 loadDList :: Document -> [Document]
 loadDList (DList xs) = xs
@@ -65,7 +55,6 @@ data State = State {
 
 -- Empty state definition 
 emptyState :: State
-emptyState = State ["Initial state"]
 emptyState = State {rowData = [], colData = [], hintNumber = 0, hintCoords = [], board = replicate 100 Water, document = DNull}
 
 -- Converts DInteger to Int
@@ -102,9 +91,8 @@ splitBoard xs = take 10 xs : splitBoard (drop 10 xs)
 
 -- Renders game board
 render :: State -> String
-render = show
 render s = do
-    concat ("\nNumber of hints left: " : show (hintNumber s - length (hintCoords s)) : "\nTo get next hint use \"hint ": [show(length (hintCoords s) +1)] ++ ["\" command\n\n    1  2  3  4  5  6  7  8  9  10 \n"] ++ rows ++ ["   "] ++ map (\x -> " " ++ show x ++ " ") (colData s) ++ ["\n"])
+    concat ("\nNumber of hints left: " : show (hintNumber s - length (hintCoords s)) : ["\n\n    1  2  3  4  5  6  7  8  9  10 \n"] ++ rows ++ ["   "] ++ map (\x -> " " ++ show x ++ " ") (colData s) ++ ["\n"])
     where
         rows' = map (\ys -> " " ++ concatMap (\y -> show y ++ "  ") ys) (splitBoard (board s))
         rows  = [(if i < 9 then " " else "") ++ show (i + 1) ++ " " ++ (rows' !! i) ++ "| " ++ show (rowData s !! i) ++ "\n" | i <- [0..9]] ++ ["    ————————————————————————————\n"]
@@ -113,8 +101,6 @@ render s = do
 -- CHECK
 ---------------------------------------------------------------------------------------------------------------------------------------
 
--- IMPLEMENT
--- Make check from current state
 -- Gets a list of indexes of a given list elements that is true with the function f
 getIDIf :: Int -> (a -> Bool) -> [a] -> [Int]
 getIDIf _ _ [] = []
@@ -134,7 +120,6 @@ toCoord ((x,y):xs) = Coord x y : toCoord xs
 
 -- Makes a check from a current state
 mkCheck :: State -> Check
-mkCheck _ = Check []
 mkCheck s = Check (toCoord (createCoordList (board s)))
 
 ---------------------------------------------------------------------------------------------------------------------------------------
@@ -146,13 +131,9 @@ changeElementAt :: [a] -> a -> Int -> [a]
 changeElementAt b sq n = xs ++ [sq] ++ drop 1 ys
     where (xs, ys) = splitAt n b
 
--- IMPLEMENT
--- Toggle state's value
--- Receive raw user input tokens
--- Toggle state's board 
+-- Toggle state's board value
 -- Does not validates user input
 toggle :: State -> [String] -> State
-toggle (State l) t = State $ ("Toggle " ++ show t) : l
 toggle s t = s {board = board'}
     where
         tc = read (head t)
@@ -190,7 +171,6 @@ removeDuplicates = foldl (\seen x -> if x `elem` seen then seen else seen ++ [x]
 -- IMPLEMENT
 -- Adds hint data to the game state
 hint :: State -> Document -> State
-hint (State l) h = State $ ("Hint " ++ show h) : lhint s h = s {
 hint s h = s {
     board = showHints hintCoordinates (board s),
     hintCoords = removeDuplicates(hintCoordinates ++ hintCoords s)

@@ -191,6 +191,7 @@ removeDuplicates = foldl (\seen x -> if x `elem` seen then seen else seen ++ [x]
 -- Adds hint data to the game state
 hint :: State -> Document -> State
 hint (State l) h = State $ ("Hint " ++ show h) : lhint s h = s {
+hint s h = s {
     board = showHints hintCoordinates (board s),
     hintCoords = removeDuplicates(hintCoordinates ++ hintCoords s)
 } where hintCoordinates = getHints ( loadDList ( findByKey ( loadDMap h) "coords" ) ) []

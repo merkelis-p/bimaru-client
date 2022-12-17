@@ -52,10 +52,7 @@ tomYamlDList i d =
             (DList ((DMap  x) : xs))   -> ((addWS i ++ "- "  ) : toYamlDMap (i + 2) (DMap x)) ++ tomYamlDList i (DList xs)
             (DList (x : xs))           -> ( addWS i ++ "- " ++ toYamlSingleDocument x)  : (tomYamlDList i (DList xs)) 
 
--- IMPLEMENT
 -- Renders document to yaml
-renderDocument :: Document -> String
-renderDocument _ = error "Implement me"
 renderDocument :: Document -> String 
 renderDocument (DMap [])   = "---\n[]"
 renderDocument (DList [])  = "---\n[]"
@@ -70,7 +67,6 @@ gameDataValidation xs = if length xs /= 10 then Left "Expected 10 values for row
 -- This adds game data to initial state
 -- Errors are reported via Either but not error 
 gameStart :: State -> Document -> Either String State
-gameStart (State l) d = Right $ State $ ("Game started: " ++ show d) : l
 gameStart s d = do
     initialDMap <- loadDMap d
     occupiedRows <- findByKey initialDMap "occupied_rows"
@@ -92,7 +88,6 @@ gameStart s d = do
 -- Adds hint data to the game state
 -- Errors are reported via Either but not error 
 hint :: State -> Document -> Either String State
-hint (State l) h = Right $ State $ ("Hint " ++ show h) : l
 hint s h = do
     dmap <- loadDMap h
     coordsTuple <- findByKey dmap "coords"

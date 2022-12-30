@@ -1,0 +1,48 @@
+<uppercase-letter> ::= 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' 
+		             | 'I' | 'J' | 'K' | 'L' | 'M' | 'N' | 'O' | 'P' 
+		             | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' 
+		             | 'Y' | 'Z' 
+
+
+<lowercase-letter> ::=   
+                       'a' | 'b' | 'c' | 'd' |'e' | 'f' | 'g' | 'h'| 'i' | 'j' | 'k' | 'l'
+		             | 'm' | 'n' | 'o' | 'p'| 'q' | 'r' | 's' | 't'| 'u' | 'v' | 'w' | 'x'
+		             | 'y' | 'z' 
+
+
+<letter>     ::=  <lowercase-letter> | <uppercase-letter>
+
+<white-space>        ::= ' '
+<underscore>        ::= '_'
+<dash>      ::= '-'
+<new-line>  ::= '\n'
+
+
+<null>           ::= 'null' <new-line>
+<string>         ::= '"' { <literal> } '"' <new-line> | ''' { <literal> } ''' <new-line> 
+<singles>      ::= <integer> | <string> | <null>
+
+<digit>          ::= '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
+<natural-number> ::= <digit> { <digit> }  
+<integer>        ::= '-' <natural-number> <new-line> | '(' '-' <natural-number> ')' <new-line> | <natural-number> <new-line>
+<literal>        ::= <letter> | <digit> | <whitespace> | <dash>
+
+<key-str>       ::= {<letter>} | ''' <letter> ''' | ''' '''
+<list-st>       ::= '-' <white-space> | '-' <new-line> | '-' <white-space> <new-line>
+<map-key>       ::= <key-str> ':' <white-space> | <key-str> ':' <new-line> | <key-str> ':' <white-space> <new-line> 
+<indentation>   ::= <white-space> <white-space>
+
+<empty-list> 	::= '[' ']'
+<empty-map>     ::= '{' '}'
+
+<list-elem>       ::= {<indentation>} <list-st> <data-types> 
+<map-elem>        ::= {<indentation>} <key-str> <data-types> 
+
+<list>		      ::= <empty-list> | {<list-elem>}
+<map>		      ::= <empty-map> | {<map>}
+
+<document-start> 	 ::= '-' '-' '-' '\n'
+
+<data-types> :: <singles> | <map> | <list> 
+
+<doc>        := <document-start> <data-types> | <data-types>

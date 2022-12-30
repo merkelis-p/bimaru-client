@@ -59,7 +59,14 @@ data State = State {
 
 -- Empty state definition 
 emptyState :: State
-emptyState = State {rowData = [], colData = [], numHints = 0, hintCoords = [], board = replicate 100 Water, document = DNull}
+emptyState = State {
+      rowData = []
+    , colData = []
+    , numHints = 0
+    , hintCoords = []
+    , board = replicate 100 Water
+    , document = DNull
+    }
 
 -- Gets a row' and col' data 
 getValues :: Document -> [Int] -> Either String [Int]
@@ -95,7 +102,8 @@ isTail (k, d) = do
 tailValidation :: Document -> Either String Document
 tailValidation DNull = Right DNull
 tailValidation (DMap ht) = Right (DMap ht)
-tailValidation _ = Left "DMap or DNull is expected for \"tail\""
+tailValidation d = Left $ "DMap or DNull is expected for \"tail\""
+
 
 getHintNO :: Document -> Either String Int
 getHintNO (DInteger x) = if x >= 0 then Right x else Left "\"number_of_hints\" expected to be positive number"
@@ -120,7 +128,7 @@ splitBoard xs = take 10 xs : splitBoard (drop 10 xs)
 
 render :: State -> String
 render s = do
-    concat ([show (board s)] ++ "\n\nNumber of hints left: " : show (numHints s - length (hintCoords s)) : ["\n\n    1  2  3  4  5  6  7  8  9  10 \n"] ++ rows ++ ["   "] ++ map (\x -> " " ++ show x ++ " ") (colData s) ++ ["\n"])
+    concat ("\nNumber of hints left: " : show (numHints s - length (hintCoords s)) : ["\n\n    1  2  3  4  5  6  7  8  9  10 \n"] ++ rows ++ ["   "] ++ map (\x -> " " ++ show x ++ " ") (colData s) ++ ["\n"])
     where
         rows' = map (\ys -> " " ++ concatMap (\y -> show y ++ "  ") ys) (splitBoard (board s))
         rows  = [(if i < 9 then " " else "") ++ show (i + 1) ++ " " ++ (rows' !! i) ++ "| " ++ show (rowData s !! i) ++ "\n" | i <- [0..9]] ++ ["    ————————————————————————————\n"]
@@ -192,7 +200,6 @@ getHints (x:xs) ys = do
     numbers <- getHintCoords x
     getHints xs (numbers : ys)
 
-
 -- Gets a tuple of hint coordinates
 getHintCoords :: Document -> Either String (Int, Int)
 getHintCoords (DMap [(kx,DInteger x),(ky,DInteger y)]) = do
@@ -211,5 +218,4 @@ hint :: State -> Document -> State
 hint s h = s {
     board = showHints hintCoordinates (board s),
     hintCoords = removeDuplicates(hintCoordinates ++ hintCoords s)
-} where hintCoordinates = fromRight [] (getHints (fromRight [] ( loadDList ( fromRight DNull ( findByKey (fromRight [] (loadDMap h)) "coords" ) ) ) ) [])
-
+} where hintCoordinates = fromRight [] ( getHints (fromRight [] (loadDList  (fromRight DNull (findByKey (fromRight [] (loadDMap h)) "coords")))) [])

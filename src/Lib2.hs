@@ -4,10 +4,8 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wno-name-shadowing #-}
 {-# OPTIONS_GHC -Wno-unused-matches #-}
-module Lib2(renderDocument, hint, gameStart) where
+module Lib2(renderDocument, hint, gameStart, gameDataValidation) where
 
-import Types ( ToDocument(..), Document, Check )
-import Lib1 (State(..))
 import Types ( 
     ToDocument(..), 
     Document (DMap, DList, DInteger, DNull, DString), 
@@ -28,35 +26,35 @@ toYamlSingleDocument :: Document -> String
 toYamlSingleDocument DNull = "null"
 toYamlSingleDocument (DInteger n) = show n
 toYamlSingleDocument (DString "") = "''"
-toYamlSingleDocument (DString s) = s
-
+toYamlSingleDocument (DString s) = "\"" ++ s ++ "\""
+ 
 toYamlDMap :: Int -> Document -> [String]
 toYamlDMap i d =
             case d of
             (DMap []) -> []
-            (DMap ((k, DMap []) : xs))   -> (prefix i k  ++ "[]") : toYamlDMap i (DMap xs)
+            (DMap ((k, DMap []) : xs))   -> (prefix i k  ++ "{}") : toYamlDMap i (DMap xs)
             (DMap ((k, DMap v) : xs))    -> prefix i k : (toYamlDMap (i + 2) (DMap v) ++ toYamlDMap i (DMap xs))
             (DMap ((k,  DList []) : xs)) -> (prefix i k ++ "[]") : toYamlDMap i (DMap xs)
-            (DMap ((k,  DList v) : xs))  -> prefix i k : (tomYamlDList (i + 2) (DList v) ++ toYamlDMap i (DMap xs))
+            (DMap ((k,  DList v) : xs))  -> prefix i k : (toYamlDList (i + 2) (DList v) ++ toYamlDMap i (DMap xs))
             (DMap ((k, v) : xs))         -> (prefix i k ++ toYamlSingleDocument v) : (toYamlDMap i (DMap xs))
             where prefix :: Int -> String -> String 
                   prefix i' k' = (addWS i') ++ (if (k' == "") then "''" else k') ++ ": "
 
-tomYamlDList :: Int -> Document -> [String]
-tomYamlDList i d = 
+toYamlDList :: Int -> Document -> [String]
+toYamlDList i d = 
             case d of 
             (DList []) -> []
-            (DList ((DList []) : xs))  -> ((addWS i ++ "- []") : tomYamlDList i (DList xs))
-            (DList ((DList x) : xs))   -> ((addWS i ++ "- "  ) : tomYamlDList (i + 2) (DList x)) ++ tomYamlDList i (DList xs) 
-            (DList ((DMap []) : xs))   -> ((addWS i ++ "- []") : tomYamlDList i (DList xs))
-            (DList ((DMap  x) : xs))   -> ((addWS i ++ "- "  ) : toYamlDMap (i + 2) (DMap x)) ++ tomYamlDList i (DList xs)
-            (DList (x : xs))           -> ( addWS i ++ "- " ++ toYamlSingleDocument x)  : (tomYamlDList i (DList xs)) 
+            (DList ((DList []) : xs))  -> ((addWS i ++ "- []") : toYamlDList i (DList xs))
+            (DList ((DList x) : xs))   -> ((addWS i ++ "- "  ) : toYamlDList (i + 2) (DList x)) ++ toYamlDList i (DList xs) 
+            (DList ((DMap []) : xs))   -> ((addWS i ++ "- {}") : toYamlDList i (DList xs))
+            (DList ((DMap  x) : xs))   -> ((addWS i ++ "- "  ) : toYamlDMap (i + 2) (DMap x)) ++ toYamlDList i (DList xs)
+            (DList (x : xs))           -> ( addWS i ++ "- " ++ toYamlSingleDocument x)  : (toYamlDList i (DList xs)) 
 
 -- Renders document to yaml
 renderDocument :: Document -> String 
-renderDocument (DMap [])   = "---\n[]"
+renderDocument (DMap [])   = "---\n{}"
 renderDocument (DList [])  = "---\n[]"
-renderDocument (DList xs)   = "---\n" ++ unlines (tomYamlDList 0 (DList xs)) 
+renderDocument (DList xs)   = "---\n" ++ unlines (toYamlDList 0 (DList xs)) 
 renderDocument (DMap  xs)   = "---\n" ++ unlines (toYamlDMap 0 (DMap  xs)) 
 renderDocument d = toYamlSingleDocument d
 
